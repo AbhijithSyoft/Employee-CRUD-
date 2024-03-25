@@ -40,7 +40,7 @@ def lambda_handler(event, context):
             cursor.execute(create_table_query)
             cnx.commit()
             
-        user_id = event.get('id')
+        user_id = event.get('user_id')
         if user_id is None:
             return {
                 'statusCode': 400,
@@ -55,29 +55,22 @@ def lambda_handler(event, context):
                 'statusCode': 400,
                 'message': 'User ID does not exist'
             }
-    
-        # Geting all employee details
-        select_query="SELECT * FROM employee"
-        cursor.execute(select_query)
-        results=cursor.fetchall()
+
+
         
-        
-        body =event
-        cursor.execute("""UPDATE employee SET name=%s, age=%s, gender=%s, phoneNo=%s, addressDetails=%s, workExperience=%s, qualificiations=%s, projects=%s, photo=%s WHERE id=%s""",
-        (body['name'],body['age'],body['gender'],body['phoneNo'],json.dumps(body.get('addressDetails', {})),json.dumps(body.get('workExperience', {})),json.dumps(body.get('qualificiations', {})),json.dumps(body.get('projects', {})),body.get('photo',""),body['id'] ))
-                        
-        
+        user_id =event['user_id']
+        cursor.execute("DELETE FROM employee WHERE id=%s", (user_id,))
         cnx.commit()
+        cursor.close()
+        cnx.close()
         return {
-            'statusCode': 200,
-            'message': "employee details updated successfully"
-        }
+                    'status code': 200,
+                    'body': "employee deleted successfully"
+                }
       
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': str(e),
-            "message":event['body']
-            
+            'body': json.dumps(str(event)),
+            "message":str(e)
         }
-    
