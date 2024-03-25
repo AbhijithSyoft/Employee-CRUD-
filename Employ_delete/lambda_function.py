@@ -39,22 +39,45 @@ def lambda_handler(event, context):
                 """
             cursor.execute(create_table_query)
             cnx.commit()
-    
+            
+        user_id = event.get('id')
+        if user_id is None:
+            return {
+                'statusCode': 400,
+                'message': 'User ID is missing in the request'
+            }
         
-        user_id =event['user_id']
-        cursor.execute("DELETE FROM employee WHERE id=%s", (user_id,))
+        id_is_exists = f"SELECT COUNT(*) AS employee_count FROM employee WHERE id = '{user_id}' ;"
+        cursor.execute(id_is_exists)
+        results = cursor.fetchone()
+        if results[0] == 0:
+            return {
+                'statusCode': 400,
+                'message': 'User ID does not exist'
+            }
+    
+        # Geting all employee details
+        select_query="SELECT * FROM employee"
+        cursor.execute(select_query)
+        results=cursor.fetchall()
+        
+        
+        body =event
+        cursor.execute("""UPDATE employee SET name=%s, age=%s, gender=%s, phoneNo=%s, addressDetails=%s, workExperience=%s, qualificiations=%s, projects=%s, photo=%s WHERE id=%s""",
+        (body['name'],body['age'],body['gender'],body['phoneNo'],json.dumps(body.get('addressDetails', {})),json.dumps(body.get('workExperience', {})),json.dumps(body.get('qualificiations', {})),json.dumps(body.get('projects', {})),body.get('photo',""),body['id'] ))
+                        
+        
         cnx.commit()
-        cursor.close()
-        cnx.close()
         return {
-                    'status code': 200,
-                    'body': "employee deleted successfully"
-                }
+            'statusCode': 200,
+            'message': "employee details updated successfully"
+        }
       
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(str(event)),
-            "message":str(e)
+            'body': str(e),
+            "message":event['body']
+            
         }
     
