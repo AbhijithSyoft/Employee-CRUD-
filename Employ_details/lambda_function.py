@@ -11,7 +11,7 @@ def lambda_handler(event, context):
             database="mydatabase")
         cursor=cnx.cursor()
         
-        # CREATEING DATABASE
+       # CREATEING DATABASE
         # create_db_query = "CREATE DATABASE IF NOT EXISTS mydatabase"
         # cursor.execute(create_db_query)
         
@@ -41,7 +41,7 @@ def lambda_handler(event, context):
             cnx.commit()
     
         # Geting all employee details
-        select_query="SELECT * FROM employee ORDER BY id DESC LIMIT 1"
+        select_query="SELECT * FROM employee;"
         cursor.execute(select_query)
         results=cursor.fetchall() 
         
@@ -68,11 +68,14 @@ def lambda_handler(event, context):
                 "status code": 200,
                 "message": "employee Details",
                 "data": table_data
-
             }
       
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(str(event))
+            'body': json.dumps(str(e))
         }
+    
+
+    
+
