@@ -52,10 +52,18 @@ def lambda_handler(event, context):
         last_two_digits = int(str(results_data[0])[-2:]) + 1
         formatted_value = f"EMP{str(last_two_digits).zfill(2)}"
         
-        body =event
-        email_checking="SELECT COUNT(*) AS email_count FROM EmployeDetail WHERE email ='{body['email]}' ;"
-        cursor.execute(email_checking)
+       
         
+        body =event
+        email_checking = f"SELECT COUNT(*) AS email_count FROM employee WHERE email = '{body['email']}' ;"
+        cursor.execute(email_checking)
+        email_result = cursor.fetchone()
+        if email_result and email_result[0] > 0:
+            return {
+                'status code': 400,
+                'message': 'This email already exists, please try another email'
+            }
+            
         
         insert_data = f"""INSERT INTO employee (id, name, email, age, gender, phoneNo, addressDetails, workExperience, qualificiations, projects, photo) 
                         VALUES ('{formatted_value}', '{body['name']}', '{body['email']}', {body['age']}, '{body['gender']}', '{body['phoneNo']}', '{json.dumps(body.get('addressDetails', []))}', '{json.dumps(body.get('workExperience', []))}', '{json.dumps(body.get('qualificiations', []))}', '{json.dumps(body.get('projects', []))}', {'NULL' if body.get('photo') is None else "'" + body['photo'] + "'"})"""
